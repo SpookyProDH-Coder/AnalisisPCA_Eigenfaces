@@ -19,10 +19,10 @@ from glob import glob
 import os
 
 # ---------------- Constantes globales ---------------- #
-N_PRUEBAS = 16
+N_PRUEBAS = 16  # otros tamanos no implementados
 N_COMPONENTES = 50
-N_MAX_ITERACIONES = 30
-N_TOL = 1e-2
+N_MAX_ITERACIONES = 1000
+N_TOL = 1e-10
 
 # ---------------- Funciones ---------------- #
 
@@ -41,6 +41,8 @@ N_TOL = 1e-2
 def realizar_query(dir, s, nom):
     query_path = os.path.join(dir, s, nom)
     query_img = cv2.imread(query_path, cv2.IMREAD_GRAYSCALE)
+    if query_img is None:
+        raise FileNotFoundError("[!] Error: No se pudo leer la imagen: ", query_path)
     return query_img.reshape(1, -1)
 
 """ 
@@ -167,9 +169,10 @@ if __name__ == "__main__":
     print("Eigenfaces extraidos: ", eigenfaces.shape[0])
 
     # Mostramos los primeras N_PRUEBAS caras propias
+    num_eigen = min(N_PRUEBAS, eigenfaces.shape[0])
     print("[*] Mostrando las primeras ", N_PRUEBAS, " caras propias...")
     fig, axes = plt.subplots(4,4,sharex=True,sharey=True,figsize=(8,10))
-    for i in range(N_PRUEBAS):
+    for i in range(num_eigen):
         axes[i // 4][i % 4].imshow(eigenfaces[i].reshape(faceshape), cmap="gray")
         axes[i // 4, i % 4].axis("off")
 
