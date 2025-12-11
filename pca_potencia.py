@@ -135,31 +135,23 @@ class PCAMetodoPotencia:
         self.n_components = min(self.n_components, n_features)
         
         # Calculamos matriz de covarianza: Cov = (1/n) * X^T * X
-        # Optimizacion critica: Decidimos cual matriz usar
-        usar_matriz_pequena = True
-        if n_samples < n_features:
-            self._covariance_matrix = (self._X_centrado.T @ self._X_centrado) / (n_samples - 1)
-        else:
-            usar_matriz_pequena = False
-            self._covariance_matrix = (self._X_centrado.T @ self._X_centrado) / (n_samples - 1)
+        self._covariance_matrix = (self._X_centrado @ self._X_centrado.T) / (n_samples - 1)
 
+        A = self._covariance_matrix.copy()
+        
         # Inicializamos almacenamiento para vectores propios y valores propios
         vectores_propios = []
         valores_propios = []
-        A = self._covariance_matrix.copy()
         
         # Encontramos 'n_components' vectores_propios usando deflacion
         for i in range(self.n_components):
             # Metodo de potencia para encontrar el vector propio dominante
             v, lam = self._metodo_potencia(A, max_iter=self.max_iter, tol=self.tol)
             
-            if usar_matriz_pequena:
-                v_original = self._X_centrado.T @ v
-                v_original /= np.linalg.norm(v_original)
-                vectores_propios.append(v_original)
-            else:
-                vectores_propios.append(v)
-
+            v_original = self._X_centrado.T @ v
+            v_original /= np.linalg.norm(v_original)
+            
+            vectores_propios.append(v_original)
             valores_propios.append(max(lam, 0)) # Aseguramos no negatividad
             
             # Deflacion
@@ -167,7 +159,7 @@ class PCAMetodoPotencia:
         
             # Mostramos el progreso
             if (i + 1) % 10 == 0:
-                    print("Extraidos ",i+1, self.n_components, " componentes.")
+                    print("Extraidos ",i+1, " de ", self.n_components, " componentes.")
 
         # Almacenamos resultados
         self.components_ = np.array(vectores_propios)
